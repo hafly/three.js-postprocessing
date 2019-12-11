@@ -75,13 +75,14 @@
         scene.add(light);
 
         // postprocessing
+        composer = new THREE.EffectComposer(renderer);
+
         var renderPass = new THREE.RenderPass(scene, camera);
         composer.addPass(renderPass);
 
         effect = new THREE.BloomPass(3, 25, 5.0, 256);
         var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
 
-        composer = new THREE.EffectComposer(renderer);
         composer.addPass(effect);
         composer.addPass(effectCopy);
 

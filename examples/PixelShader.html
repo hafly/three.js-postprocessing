@@ -88,7 +88,7 @@
         effect.uniforms["resolution"].value.multiplyScalar(window.devicePixelRatio);
         composer.addPass(effect);
 
-        // new THREE.OrbitControls(camera, renderer.domElement);
+        new THREE.OrbitControls(camera, renderer.domElement);
 
         window.addEventListener('resize', onWindowResize, false);
     }
