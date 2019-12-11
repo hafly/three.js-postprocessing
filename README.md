@@ -87,7 +87,7 @@ afterimage = new THREE.AfterimagePass();
 composer.addPass(afterimage);
 afterimage.uniforms["damp"].value = 0.97;
 ```
-[demo](./examples/AfterimagePass.html)  
+[demo](https://hafly.github.io/three.js-postprocessing/examples/AfterimagePass.html?_blank)  
 ![image](./screenshot/AfterimagePass.png)
 
 * **BloomPass.js**
@@ -112,7 +112,7 @@ composer1.addPass(renderScene); // 渲染当前场景
 composer1.addPass(bloomPass);   // 添加光效
 composer1.addPass(effectCopy);  // 输出到屏幕
 ```
-[demo](./examples/BloomPass.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/BloomPass.html?_blank)
 ![image](./screenshot/BloomPass.png)
 
 * **UnrealBloomPass.js**
@@ -140,7 +140,7 @@ gui.add(settings, "radius", 0.0, 1.0).name("光晕半径").onChange(function (e)
     unrealBloomPass.radius = e;
 });
 ```
-[demo](./examples/UnrealBloomPass.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/UnrealBloomPass.html?_blank)
 ![image](./screenshot/UnrealBloomPass.png)
 
 * **BokehPass.js**
@@ -178,7 +178,7 @@ gui.add(settings, "maxblur", 0, 3, 0.025).name("最大模糊").onChange(function
     bokehPass.uniforms['maxblur'].value = e;
 });
 ``` 
-[demo](./examples/BokehPass.html)  
+[demo](https://hafly.github.io/three.js-postprocessing/examples/BokehPass.html?_blank)  
 ![image](./screenshot/BokehPass.png)
 
 * **FilmPass.js**
@@ -190,7 +190,7 @@ gui.add(settings, "maxblur", 0, 3, 0.025).name("最大模糊").onChange(function
 `scanlinesIntensity`：扫描线的显著程度  
 `scanLinesCount`：扫描线的数量  
 `gratScale`：是否使用灰度图输出  
-[demo](./examples/FilmPass.html)  
+[demo](https://hafly.github.io/three.js-postprocessing/examples/FilmPass.html?_blank)  
 ![image](./screenshot/FilmPass.png)
 
 * **GlitchPass.js**
@@ -202,7 +202,7 @@ gui.add(settings, "maxblur", 0, 3, 0.025).name("最大模糊").onChange(function
 **属性**：  
 goWild，默认为false，为true则会持续显示全屏电子脉冲
 **用法示例**：  
-[demo](./examples/GlitchPass.html)  
+[demo](https://hafly.github.io/three.js-postprocessing/examples/GlitchPass.html?_blank)  
 ![image](./screenshot/GlitchPass.png)
 
 - ClearPass.js
@@ -253,7 +253,7 @@ new THREE.TextureLoader().load("textures/hardwood2_diffuse.jpg", function (map) 
 `opacity`，透明度  
 `enabled`，是否开启通道，默认为true  
 **用法示例**：  
-[demo](./examples/Background.html)  
+[demo](https://hafly.github.io/three.js-postprocessing/examples/Background.html?_blank)  
 ![image](./screenshot/Background.png)
 
 * **HalftonePass.js**
@@ -322,7 +322,7 @@ outline.add(settings, "usePatternTexture").name("使用图案纹理").onChange(f
     outlinePass.usePatternTexture = e;
 });
 ```
-[demo](./examples/OutlinePass.html)  
+[demo](https://hafly.github.io/three.js-postprocessing/examples/OutlinePass.html?_blank)  
 ![image](./screenshot/OutlinePass.png)
 
 * **MaskPass.js**
@@ -368,7 +368,7 @@ composer.addPass(clearMaskPass);// 如果有多个掩码通道，每次都需要
 var outputPass = new THREE.ShaderPass(THREE.CopyShader);
 composer.addPass(outputPass);
 ```
-[demo](./examples/MaskPass.html)  
+[demo](https://hafly.github.io/three.js-postprocessing/examples/MaskPass.html?_blank)  
 ![image](./screenshot/MaskPass.png)
 
 ### 着色器包
@@ -387,7 +387,7 @@ var dotScreenShader = new THREE.ShaderPass(THREE.DotScreenShader);
 dotScreenShader.uniforms['scale'].value = 4;
 composer.addPass(dotScreenShader);
 ```
-[demo](./examples/DotScreenShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/DotScreenShader.html?_blank)
 ![image](./screenshot/DotScreenShader.png)
 
 * **RGBShiftShader.js**
@@ -403,7 +403,7 @@ var RGBshiftShader = new THREE.ShaderPass(THREE.RGBShiftShader);
 RGBshiftShader.uniforms['amount'].value = 0.0015;
 composer.addPass(RGBshiftShader);
 ```
-[demo](./examples/RGBShiftShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/RGBShiftShader.html?_blank)
 ![image](./screenshot/RGBShiftShader.png)
 
 * **LuminosityHighPassShader.js**  
@@ -418,7 +418,7 @@ composer.addPass(RGBshiftShader);
 
 **引用**：js/shaders/LuminosityShader.js
 
-[demo](./examples/LuminosityShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/LuminosityShader.html?_blank)
 ![image](./screenshot/LuminosityShader.png)
 
 * **SobelOperatorShader**
@@ -427,7 +427,7 @@ composer.addPass(RGBshiftShader);
 
 **引用**：js/shaders/SobelOperatorShader.js
 
-[demo](./examples/SobelOperatorShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/SobelOperatorShader.html?_blank)
 ![image](./screenshot/SobelOperatorShader.png)
 
 * **FXAAShader**
@@ -445,7 +445,7 @@ effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.in
 composer.addPass(effectFXAA);
 ```
 
-[demo](./examples/FXAAShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/FXAAShader.html?_blank)
 ![image](./screenshot/FXAAShader.png)
 
 * **FocusShader**
@@ -454,7 +454,7 @@ composer.addPass(effectFXAA);
 
 **引用**：js/shaders/FocusShader.js  
 
-[demo](./examples/FocusShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/FocusShader.html?_blank)
 ![image](./screenshot/FocusShader.png)
 
 * **VignetteShader**
@@ -463,7 +463,7 @@ composer.addPass(effectFXAA);
 
 **引用**：js/shaders/VignetteShader.js  
 
-[demo](./examples/VignetteShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/VignetteShader.html?_blank)
 ![image](./screenshot/VignetteShader.png)
 
 * **PixelShader**
@@ -483,5 +483,7 @@ pixelShader.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth *
 pixelShader.uniforms['pixelSize'].value = 16;
 ```
 
-[demo](./examples/PixelShader.html)
+[demo](https://hafly.github.io/three.js-postprocessing/examples/PixelShader.html?_blank)
 ![image](./screenshot/PixelShader.png)
+
+[描述](www.baidu.com)
