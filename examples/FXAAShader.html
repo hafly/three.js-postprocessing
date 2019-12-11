@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FXAAShader</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #fff;
+            color: #222;
+            font-family: Monospace;
+        }
+
+        a {
+            color: #08f;
+        }
+
+        #info {
+            position:absolute;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        #container {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            bottom: 0;
+        }
+    </style>
+
+    <script src="build/three.min.js"></script>
+
+    <script src="js/postprocessing/EffectComposer.js"></script>
+    <script src="js/postprocessing/RenderPass.js"></script>
+    <script src="js/postprocessing/ShaderPass.js"></script>
+
+    <script src="js/shaders/CopyShader.js"></script>
+    <script src="js/shaders/LuminosityShader.js"></script>
+    <script src="js/shaders/FXAAShader.js"></script>
+</head>
+<body>
+<div id="info">
+    <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - postprocessing - FXAA<br/>
+    Left scene processed with FXAA, right scene is rendered without anti-aliasing.
+</div>
+<div id="container"></div>
+<script>
+    var container = document.getElementById('container');
+    var scene, camera, renderer;
+    var composer1, composer2, fxaaPass;
+    var group;
+    var effect;
+    var clock = new THREE.Clock();
+
+    // 预制件
+    var Prefab = {
+        Sphere: (function () {
+            var instance;
+            return function () {
+                if (!instance) {
+                    instance = new createSphere();
+                }
+                return instance.clone();
+            }
+        })()
+    }
+
+    init();
+    update();
+
+    function init() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff);
+        scene.fog = new THREE.Fog(0xcccccc, 100, 1500);
+
+        camera = new THREE.PerspectiveCamera(45, (container.offsetWidth * 0.5) / container.offsetHeight, 1, 2000);
+        camera.position.z = 500;
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.autoClear = false;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(container.offsetWidth, container.offsetHeight);
+        container.appendChild(renderer.domElement);
+
+        group = new THREE.Group();
+        scene.add(group);
+
+        for (var i = 0; i < 100; i++) {
+            var mesh = new Prefab.Sphere();
+            mesh.position.x = Math.random() * 500 - 250;
+            mesh.position.y = Math.random() * 500 - 250;
+            mesh.position.z = Math.random() * 500 - 250;
+
+            mesh.scale.setScalar(Math.random() * 2 + 1);
+
+            mesh.rotation.x = Math.random() * Math.PI;
+            mesh.rotation.y = Math.random() * Math.PI;
+            mesh.rotation.z = Math.random() * Math.PI;
+            group.add(mesh);
+        }
+
+        scene.add(new THREE.AmbientLight(0x222222));
+
+        var hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
+        hemiLight.position.set(0, 1000, 0);
+        scene.add(hemiLight);
+
+        var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(-3000, 1000, -1000);
+        scene.add(dirLight);
+
+        // postprocessing
+        var renderPass = new THREE.RenderPass(scene, camera);
+
+        composer1 = new THREE.EffectComposer(renderer);
+        composer1.addPass(renderPass);
+
+        fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
+        fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * window.devicePixelRatio);
+        fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * window.devicePixelRatio);
+        composer1.addPass(fxaaPass);
+
+        var copyPass = new THREE.ShaderPass(THREE.CopyShader);
+        composer2 = new THREE.EffectComposer(renderer);
+        composer2.addPass(renderPass);
+        composer2.addPass(copyPass);
+
+        window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function update() {
+        requestAnimationFrame(update);
+
+        group.rotation.y += clock.getDelta() * 0.1;
+
+        var halfWidth = container.offsetWidth / 2;
+
+        renderer.setViewport(0, 0, halfWidth, container.offsetHeight);
+        composer1.render();
+
+        renderer.setViewport(halfWidth, 0, halfWidth, container.offsetHeight);
+        composer2.render();
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer1.setSize(window.innerWidth, window.innerHeight);
+        composer2.setSize(window.innerWidth, window.innerHeight);
+
+        fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.offsetWidth * pixelRatio);
+        fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.offsetHeight * pixelRatio);
+    }
+
+    function createSphere() {
+        var geometry = new THREE.TetrahedronBufferGeometry(10);
+        var material = new THREE.MeshStandardMaterial({color: 0xee0808, flatShading: true});
+        var mesh = new THREE.Mesh(geometry, material);
+        return mesh;
+    }
+</script>
+</body>
+</html>

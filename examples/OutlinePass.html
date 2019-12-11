@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OutlinePass</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="build/three.min.js"></script>
+    <script src="libs/dat.gui.min.js"></script>
+
+    <script src="js/postprocessing/EffectComposer.js"></script>
+    <script src="js/postprocessing/RenderPass.js"></script>
+    <script src="js/postprocessing/ShaderPass.js"></script>
+    <script src="js/postprocessing/OutlinePass.js"></script>
+
+    <script src="js/shaders/CopyShader.js"></script>
+
+    <script src="js/controls/OrbitControls.js"></script>
+</head>
+<body>
+<script>
+    var scene, camera, renderer, composer;
+    var group, light;
+    var outline_objects = [];
+    var outlinePass;
+    var params = {
+        edgeStrength: 3.0,
+        edgeGlow: 0.0,
+        edgeThickness: 1.0,
+        pulsePeriod: 0,
+        rotate: false,
+        usePatternTexture: false,
+        enable: true
+    };
+
+    // 预制件
+    var Prefab = {
+        Sphere: (function () {
+            var instance;
+            return function () {
+                if (!instance) {
+                    instance = new createSphere();
+                }
+                return instance.clone();
+            }
+        })()
+    }
+
+    init();
+    update();
+    createGUI();
+
+    function init() {
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.z = 400;
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        group = new THREE.Group();
+        scene.add(group);
+
+        for (var i = 0; i < 100; i++) {
+            var mesh = new Prefab.Sphere();
+            mesh.material = new THREE.MeshPhongMaterial({color: new THREE.Color(Math.random(), Math.random(), Math.random()), flatShading: true});
+            mesh.material.needsUpdate = true;
+
+            mesh.position.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+            mesh.position.multiplyScalar(Math.random() * 400);
+            mesh.rotation.set(Math.random() * 2, Math.random() * 2, Math.random() * 2);
+            mesh.scale.x = mesh.scale.y = mesh.scale.z = Math.random() * 50;
+            group.add(mesh);
+            outline_objects.push(mesh);
+        }
+
+        scene.add(new THREE.AmbientLight(0x222222));
+
+        light = new THREE.DirectionalLight(0xffffff);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+
+        // postprocessing
+        composer = new THREE.EffectComposer(renderer);
+
+        var renderPass = new THREE.RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+        composer.addPass(outlinePass);
+        outlinePass.selectedObjects = outline_objects;
+
+        new THREE.OrbitControls(camera, renderer.domElement);
+
+        window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function update() {
+        requestAnimationFrame(update);
+
+        composer.render();
+        if (params.enable) {
+            composer.render();
+        } else {
+            renderer.render(scene, camera);
+        }
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function createGUI() {
+        var gui = new dat.GUI();
+
+        gui.add(params, 'edgeStrength', 0.01, 10).onChange(function (value) {
+            outlinePass.edgeStrength = Number(value);
+        });
+        gui.add(params, 'edgeGlow', 0.0, 1).onChange(function (value) {
+            outlinePass.edgeGlow = Number(value);
+        });
+        gui.add(params, 'edgeThickness', 1, 4).onChange(function (value) {
+            outlinePass.edgeThickness = Number(value);
+        });
+        gui.add(params, 'pulsePeriod', 0.0, 5).onChange(function (value) {
+            outlinePass.pulsePeriod = Number(value);
+        });
+        gui.add(params, 'usePatternTexture').onChange(function (value) {
+            outlinePass.usePatternTexture = value;
+        });
+        gui.add(params, 'enable');
+    }
+
+    function createSphere() {
+        var geometry = new THREE.SphereBufferGeometry(1, 4, 4);
+        var material = new THREE.MeshPhongMaterial({color: 0xffffff, flatShading: true});
+        var mesh = new THREE.Mesh(geometry, material);
+        return mesh;
+    }
+</script>
+</body>
+</html>

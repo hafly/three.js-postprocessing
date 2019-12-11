@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Background</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="build/three.min.js"></script>
+    <script src="libs/dat.gui.min.js"></script>
+
+    <script src="js/postprocessing/EffectComposer.js"></script>
+    <script src="js/postprocessing/RenderPass.js"></script>
+    <script src="js/postprocessing/ShaderPass.js"></script>
+    <script src="js/postprocessing/ClearPass.js"></script>
+    <script src="js/postprocessing/TexturePass.js"></script>
+    <script src="js/postprocessing/CubeTexturePass.js"></script>
+
+    <script src="js/shaders/CopyShader.js"></script>
+
+    <script src="js/controls/OrbitControls.js"></script>
+</head>
+<body>
+<script>
+    var scene, camera, renderer, composer;
+    var group;
+    var renderPass, texturePass, cubeTexturePass;
+    var params = {
+        clearPass: true,
+        clearColor: 'white',
+        clearAlpha: 1.0,
+
+        texturePass: true,
+        texturePassOpacity: 1.0,
+
+        cubeTexturePass: true,
+        cubeTexturePassOpacity: 1.0,
+
+        renderPass: true
+    };
+
+    init();
+    update();
+    createGUI();
+
+    function init() {
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 1, 100);
+        camera.position.z = 7;
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        group = new THREE.Group();
+        scene.add(group);
+
+        var light = new THREE.PointLight(0xddffdd, 1.0);
+        light.position.z = 70;
+        light.position.y = -70;
+        light.position.x = -70;
+        scene.add(light);
+
+        createSphere();
+
+        // postprocessing
+
+        // composer
+        composer = new THREE.EffectComposer(renderer);
+
+        // clearPass
+        clearPass = new THREE.ClearPass(params.clearColor, params.clearAlpha);
+        composer.addPass(clearPass);
+
+        // texturePass
+        texturePass = new THREE.TexturePass();
+        composer.addPass(texturePass);
+        var textureLoader = new THREE.TextureLoader();
+        textureLoader.load("textures/hardwood2_diffuse.jpg", function (map) {
+            texturePass.map = map;
+        });
+
+        // cubeTexturePass
+        cubeTexturePass = new THREE.CubeTexturePass(camera);
+        composer.addPass(cubeTexturePass);
+        var ldrUrls = genCubeUrls("textures/cube/pisa/", ".png");
+        new THREE.CubeTextureLoader().load(ldrUrls, function (ldrCubeMap) {
+            cubeTexturePass.envMap = ldrCubeMap;
+        });
+
+        // renderPass
+        renderPass = new THREE.RenderPass(scene, camera);
+        renderPass.clear = false;
+        composer.addPass(renderPass);
+
+        // copyPass
+        var copyPass = new THREE.ShaderPass(THREE.CopyShader);
+        composer.addPass(copyPass);
+
+        new THREE.OrbitControls(camera, renderer.domElement);
+
+        window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function update() {
+        requestAnimationFrame(update);
+
+        composer.render();
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function createGUI() {
+        var clearPassChanger = function () {
+            var newColor = clearPass.clearColor;
+            switch (params.clearColor) {
+                case 'blue':
+                    newColor = 0x0000ff;
+                    break;
+                case 'red':
+                    newColor = 0xff0000;
+                    break;
+                case 'green':
+                    newColor = 0x00ff00;
+                    break;
+                case 'white':
+                    newColor = 0xffffff;
+                    break;
+                case 'black':
+                    newColor = 0x000000;
+                    break;
+            }
+            clearPass.enabled = params.clearPass;
+            clearPass.clearColor = newColor;
+            clearPass.clearAlpha = params.clearAlpha;
+        };
+
+        var texturePassChanger = function () {
+            texturePass.enabled = params.texturePass;
+            texturePass.opacity = params.texturePassOpacity;
+        };
+
+        var cubeTexturePassChanger = function () {
+            cubeTexturePass.enabled = params.cubeTexturePass;
+            cubeTexturePass.opacity = params.cubeTexturePassOpacity;
+        };
+
+        var renderPassChanger = function () {
+            renderPass.enabled = params.renderPass;
+        }
+
+        var gui = new dat.GUI();
+
+        gui.add(params, "clearPass").onChange(clearPassChanger);
+        gui.add(params, "clearColor", ['black', 'white', 'blue', 'green', 'red']).onChange(clearPassChanger);
+        gui.add(params, "clearAlpha", 0, 1).onChange(clearPassChanger);
+
+        gui.add(params, "texturePass").onChange(texturePassChanger);
+        gui.add(params, "texturePassOpacity", 0, 1).onChange(texturePassChanger);
+
+        gui.add(params, "cubeTexturePass").onChange(cubeTexturePassChanger);
+        gui.add(params, "cubeTexturePassOpacity", 0, 1).onChange(cubeTexturePassChanger);
+
+        gui.add(params, "renderPass").onChange(renderPassChanger);
+    }
+
+    function createSphere() {
+        var geometry = new THREE.SphereBufferGeometry(1, 48, 24);
+
+        var material = new THREE.MeshStandardMaterial();
+        material.roughness = 0.5 * Math.random() + 0.25;
+        material.metalness = 0;
+        material.color.setHSL(Math.random(), 1.0, 0.3);
+
+        var mesh = new THREE.Mesh(geometry, material);
+        group.add(mesh);
+    }
+
+    function genCubeUrls(prefix, postfix) {
+        return [
+            prefix + 'px' + postfix, prefix + 'nx' + postfix,
+            prefix + 'py' + postfix, prefix + 'ny' + postfix,
+            prefix + 'pz' + postfix, prefix + 'nz' + postfix
+        ];
+    }
+</script>
+</body>
+</html>
